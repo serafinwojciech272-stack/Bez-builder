@@ -1,0 +1,2 @@
+import {describe,it,expect} from 'vitest'; import {evaluate,potentialReturn} from '../src/engine'; import {events} from '../src/domain';
+describe('Bet Builder engine',()=>{it('multiplies odds deterministically',()=>expect(evaluate([events[0].markets[0].selections[0],events[0].markets[1].selections[0]]).combinedOdds).toBe(3.73));it('rejects conflicting same-market legs',()=>expect(evaluate([events[0].markets[0].selections[0],events[0].markets[0].selections[1]]).ok).toBe(false));it('calculates return',()=>expect(potentialReturn(20,3.73)).toBe(74.6))});
