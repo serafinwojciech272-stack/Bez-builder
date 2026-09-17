@@ -8,8 +8,7 @@ export type PortfolioInsight={diversification:number; concentration:number; stro
 function scoreSelection(s:Selection){
   const implied=1/s.odds;
   const rawEdge=s.probability/implied-1;
-  const confidence=s.probability*(1-Math.abs(rawEdge)<0?0:1);
-  return Math.max(-1,Math.min(1,rawEdge*0.7+s.probability*0.3+confidence*0.05));
+  return Math.max(-1,Math.min(1,rawEdge*0.7+s.probability*0.3));
 }
 
 export function rankCandidates(events:Event[], excluded:Selection[]=[]):Candidate[]{
@@ -18,11 +17,12 @@ export function rankCandidates(events:Event[], excluded:Selection[]=[]):Candidat
 }
 
 export function inspectPortfolio(events:Event[], selections:Selection[]):PortfolioInsight{
-  const candidates=rankCandidates(events,selections).slice(0,8);
+  const all=rankCandidates(events,selections);
+  const candidates=all.slice(0,8);
   const markets=new Set(selections.map(s=>s.marketId));
-  const concentration=selections.length?Math.min(1,selections.length===1?1:selections.filter(s=>events.some(e=>e.markets.some(m=>m.id===s.marketId))).length/selections.length):0;
+  const concentration=selections.length?Math.min(1,markets.size===1?1:1/markets.size):0;
   const diversification=selections.length?Math.max(0,1-concentration*.35):0;
-  const trace=[`Portfolio contains ${selections.length} selected legs.`,`Distinct markets: ${markets.size}.`,`Candidate scan evaluated ${rankCandidates(events,selections).length} open selections.`,`Ranking uses probability, implied probability and raw value signal.`];
+  const trace=[`Portfolio contains ${selections.length} selected legs.`,`Distinct markets: ${markets.size}.`,`Candidate scan evaluated ${all.length} open selections.`,`Ranking uses model probability, implied probability and value signal.`];
   const strongest=candidates[0]??null;
   if(strongest) trace.push(`Top candidate signal: ${strongest.reason}.`);
   return {diversification,concentration,strongest,candidates,trace};
